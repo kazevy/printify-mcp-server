@@ -1,5 +1,4 @@
 import pytest
-import httpx
 import respx
 
 from src.services.printify import PrintifyService
