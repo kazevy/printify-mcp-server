@@ -88,3 +88,35 @@ class TestPublishProduct:
         }
         result = await service.publish_product("prod_1", publish_data)
         assert result == {}
+
+
+class TestProductErrorHandling:
+    @respx.mock
+    async def test_returns_structured_error_on_422(self, service: PrintifyService):
+        from src.tools._error_handler import handle_errors
+
+        @handle_errors
+        async def wrapped_create():
+            return await service.create_product({"blueprint_id": 6})
+
+        respx.post(f"{API}/v1/shops/{SHOP_ID}/products.json").mock(
+            return_value=httpx.Response(422, json={"title": ["is required"]})
+        )
+        result = await wrapped_create()
+        assert result["error"] is True
+        assert result["status_code"] == 422
+        assert result["details"] == {"title": ["is required"]}
+
+    async def test_returns_structured_error_when_shop_id_missing(self):
+        from src.tools._error_handler import handle_errors
+
+        no_shop_service = PrintifyService(api_key="test-key", shop_id=None)
+
+        @handle_errors
+        async def wrapped_list():
+            return await no_shop_service.list_products()
+
+        result = await wrapped_list()
+        assert result["error"] is True
+        assert result["status_code"] == 400
+        assert "shop_id" in result["message"]
