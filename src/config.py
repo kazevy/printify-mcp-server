@@ -8,4 +8,4 @@ class Settings(BaseSettings):
     port: int = 8080
     transport: str = "streamable-http"
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
