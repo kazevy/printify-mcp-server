@@ -9,6 +9,3 @@ class Settings(BaseSettings):
     transport: str = "streamable-http"
 
     model_config = {"env_file": ".env"}
-
-
-settings = Settings()

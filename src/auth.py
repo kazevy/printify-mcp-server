@@ -1,3 +1,5 @@
+import hmac
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -13,7 +15,7 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         auth = request.headers.get("authorization", "")
-        if auth != f"Bearer {self.token}":
+        if not hmac.compare_digest(auth, f"Bearer {self.token}"):
             return JSONResponse(
                 {"error": "Unauthorized"}, status_code=401
             )

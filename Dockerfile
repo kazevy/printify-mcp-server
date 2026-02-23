@@ -11,4 +11,7 @@ COPY src/ src/
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 
-CMD ["uv", "run", "src/server.py"]
+RUN adduser --disabled-password --gecos "" appuser
+USER appuser
+
+CMD ["uv", "run", "--no-dev", "python", "src/server.py"]

@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 def _create_service_and_mcp():
-    from src.config import settings
+    from src.config import Settings
 
+    settings = Settings()
     service = PrintifyService(
         api_key=settings.printify_api_key,
         shop_id=settings.printify_shop_id,
@@ -48,11 +49,13 @@ def create_app() -> Starlette:
     @contextlib.asynccontextmanager
     async def lifespan(app):
         logger.info("Printify MCP Server starting")
-        async with contextlib.AsyncExitStack() as stack:
-            await stack.enter_async_context(mcp.session_manager.run())
-            yield
-        await service.close()
-        logger.info("Printify MCP Server stopped")
+        try:
+            async with contextlib.AsyncExitStack() as stack:
+                await stack.enter_async_context(mcp.session_manager.run())
+                yield
+        finally:
+            await service.close()
+            logger.info("Printify MCP Server stopped")
 
     app = Starlette(
         routes=[
@@ -67,12 +70,14 @@ def create_app() -> Starlette:
 
 
 if __name__ == "__main__":
-    settings, service, mcp = _create_service_and_mcp()
-    transport = os.environ.get("TRANSPORT", settings.transport)
+    transport = os.environ.get("TRANSPORT", "streamable-http")
     if transport == "stdio":
+        _, _, mcp = _create_service_and_mcp()
         mcp.run(transport="stdio")
     else:
         import uvicorn
 
+        from src.config import Settings
+
         app = create_app()
-        uvicorn.run(app, host="0.0.0.0", port=settings.port)
+        uvicorn.run(app, host="0.0.0.0", port=Settings().port)
