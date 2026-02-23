@@ -47,3 +47,61 @@ class TestPrintifyServiceRequest:
         result = await service._get("/v1/shops.json")
         assert result == [{"id": 1}]
         assert route.call_count == 2
+
+
+class TestProactiveRateLimit:
+    @respx.mock
+    async def test_sleeps_when_remaining_below_threshold(self, service: PrintifyService, monkeypatch):
+        sleep_calls = []
+
+        async def mock_sleep(seconds):
+            sleep_calls.append(seconds)
+
+        monkeypatch.setattr("src.services.printify.asyncio.sleep", mock_sleep)
+
+        respx.get(f"{API}/v1/shops.json").mock(
+            return_value=httpx.Response(
+                200,
+                json=[{"id": 1}],
+                headers={"X-RateLimit-Remaining": "3", "X-RateLimit-Reset": "2"},
+            )
+        )
+        result = await service._get("/v1/shops.json")
+        assert result == [{"id": 1}]
+        assert sleep_calls == [2.0]
+
+    @respx.mock
+    async def test_no_sleep_when_remaining_above_threshold(self, service: PrintifyService, monkeypatch):
+        sleep_calls = []
+
+        async def mock_sleep(seconds):
+            sleep_calls.append(seconds)
+
+        monkeypatch.setattr("src.services.printify.asyncio.sleep", mock_sleep)
+
+        respx.get(f"{API}/v1/shops.json").mock(
+            return_value=httpx.Response(
+                200,
+                json=[{"id": 1}],
+                headers={"X-RateLimit-Remaining": "50"},
+            )
+        )
+        result = await service._get("/v1/shops.json")
+        assert result == [{"id": 1}]
+        assert sleep_calls == []
+
+    @respx.mock
+    async def test_no_sleep_when_no_ratelimit_header(self, service: PrintifyService, monkeypatch):
+        sleep_calls = []
+
+        async def mock_sleep(seconds):
+            sleep_calls.append(seconds)
+
+        monkeypatch.setattr("src.services.printify.asyncio.sleep", mock_sleep)
+
+        respx.get(f"{API}/v1/shops.json").mock(
+            return_value=httpx.Response(200, json=[{"id": 1}])
+        )
+        result = await service._get("/v1/shops.json")
+        assert result == [{"id": 1}]
+        assert sleep_calls == []

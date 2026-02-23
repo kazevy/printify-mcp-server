@@ -14,4 +14,4 @@ EXPOSE 8080
 RUN adduser --disabled-password --gecos "" appuser
 USER appuser
 
-CMD ["uv", "run", "--no-dev", "python", "src/server.py"]
+CMD ["uv", "run", "--no-dev", "python", "-m", "src.server"]

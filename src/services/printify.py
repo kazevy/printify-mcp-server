@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.printify.com"
 MAX_RETRIES = 3
+RATE_LIMIT_THRESHOLD = 5
 
 
 class PrintifyService:
@@ -33,6 +34,12 @@ class PrintifyService:
             try:
                 response = await self._client.request(method, path, **kwargs)
                 response.raise_for_status()
+                # プロアクティブレート制限
+                remaining = response.headers.get("X-RateLimit-Remaining")
+                if remaining is not None and int(remaining) < RATE_LIMIT_THRESHOLD:
+                    reset = float(response.headers.get("X-RateLimit-Reset", "1"))
+                    logger.info(f"Rate limit low ({remaining} remaining). Sleeping {reset}s")
+                    await asyncio.sleep(reset)
                 if response.status_code == 204:
                     return {}
                 return response.json()
