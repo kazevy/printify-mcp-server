@@ -1,52 +1,54 @@
 # Printify MCP Server
 
-Printify REST API の全機能を MCP (Model Context Protocol) ツールとして提供するスタンドアロンサーバー。Claude Desktop / Claude Web から Printify のショップ管理、商品作成、注文処理などを直接操作できます。
+A standalone MCP (Model Context Protocol) server that exposes the full Printify REST API as MCP tools. Manage shops, products, orders, and more directly from Claude Desktop or Claude Web.
 
-## 機能
+[日本語版 README](README.ja.md)
 
-16の MCP ツールで Printify API をフルカバー:
+## Features
 
-| カテゴリ | ツール |
-|----------|--------|
+16 MCP tools covering the entire Printify API:
+
+| Category | Tools |
+|----------|-------|
 | Shop (2) | `list_shops`, `get_shop` |
 | Product (6) | `list_products`, `get_product`, `create_product`, `update_product`, `delete_product`, `publish_product` |
 | Catalog (4) | `list_blueprints`, `get_blueprint`, `get_print_providers`, `get_variants` |
 | Image (1) | `upload_image` |
 | Order (3) | `list_orders`, `get_order`, `submit_order` |
 
-## セットアップ
+## Setup
 
-### 必要なもの
+### Prerequisites
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (パッケージマネージャー)
-- Printify API キー ([Printify Settings](https://printify.com/app/account/api) で取得)
+- [uv](https://docs.astral.sh/uv/) (package manager)
+- Printify API key (get one at [Printify Settings](https://printify.com/app/account/api))
 
-### インストール
+### Installation
 
 ```bash
 git clone https://github.com/kazevy/printify-mcp-server.git
 cd printify-mcp-server
 cp .env.example .env
-# .env を編集して PRINTIFY_API_KEY を設定
+# Edit .env and set your PRINTIFY_API_KEY
 uv sync
 ```
 
-### 環境変数
+### Environment Variables
 
-| 変数 | 必須 | 説明 |
-|------|------|------|
-| `PRINTIFY_API_KEY` | Yes | Printify API キー |
-| `PRINTIFY_SHOP_ID` | No | デフォルトのショップID（省略時は `list_shops` で取得） |
-| `MCP_AUTH_TOKEN` | No | MCP サーバーの認証トークン（リモートデプロイ時に設定推奨） |
-| `PORT` | No | サーバーポート（デフォルト: 8080） |
-| `TRANSPORT` | No | `streamable-http` or `stdio`（デフォルト: `streamable-http`） |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PRINTIFY_API_KEY` | Yes | Printify API key |
+| `PRINTIFY_SHOP_ID` | No | Default shop ID (use `list_shops` to discover) |
+| `MCP_AUTH_TOKEN` | No | Auth token for the MCP server (recommended for remote deployments) |
+| `PORT` | No | Server port (default: 8080) |
+| `TRANSPORT` | No | `streamable-http` or `stdio` (default: `streamable-http`) |
 
-## 使い方
+## Usage
 
-### Claude Desktop (stdio モード)
+### Claude Desktop (stdio mode)
 
-`claude_desktop_config.json` に追加:
+Add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -63,14 +65,14 @@ uv sync
 }
 ```
 
-### HTTP モード (ローカル)
+### HTTP Mode (local)
 
 ```bash
 uv run python -m src.server
-# http://localhost:8080 で起動
+# Running at http://localhost:8080
 ```
 
-ヘルスチェック:
+Health check:
 
 ```bash
 curl http://localhost:8080/health
@@ -87,20 +89,20 @@ docker run -p 8080:8080 \
   printify-mcp-server
 ```
 
-## 開発
+## Development
 
 ```bash
-# 依存関係インストール (dev含む)
+# Install dependencies (including dev)
 uv sync --dev
 
-# テスト実行
+# Run tests
 uv run pytest -v
 
 # Lint
 uv run ruff check src/ tests/
 ```
 
-## アーキテクチャ
+## Architecture
 
 ```
 Client → BearerAuthMiddleware → Starlette App
@@ -109,15 +111,15 @@ Client → BearerAuthMiddleware → Starlette App
                                         └── 16 MCP Tools → PrintifyService → Printify API
 ```
 
-- **Auth Middleware** — Bearer Token認証（`/health` はバイパス）
-- **MCP Server** — 公式 MCP Python SDK (FastMCP) によるツール定義
-- **PrintifyService** — httpx AsyncClient、429リトライ（指数バックオフ）、プロアクティブレート制限
+- **Auth Middleware** — Bearer token authentication (`/health` is bypassed)
+- **MCP Server** — Tool definitions via the official MCP Python SDK (FastMCP)
+- **PrintifyService** — Async httpx client with 429 retry (exponential backoff) and proactive rate limiting
 
-## ドキュメント
+## Documentation
 
-- [設計書](docs/plans/2026-02-23-printify-mcp-server-design.md)
-- [ロードマップ](docs/ROADMAP.md)
+- [Design Document](docs/plans/2026-02-23-printify-mcp-server-design.md)
+- [Roadmap](docs/ROADMAP.md)
 
-## ライセンス
+## License
 
 MIT
