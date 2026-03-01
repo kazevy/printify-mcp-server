@@ -5,7 +5,7 @@ from pydantic import AnyUrl
 
 from src.oauth_provider import InMemoryOAuthProvider
 
-from mcp.server.auth.provider import AuthorizationCode, AuthorizationParams
+from mcp.server.auth.provider import AuthorizationParams
 from mcp.shared.auth import OAuthClientInformationFull
 
 
