@@ -41,10 +41,22 @@ uv sync
 | `PRINTIFY_API_KEY` | Yes | Printify API key |
 | `PRINTIFY_SHOP_ID` | No | Default shop ID (use `list_shops` to discover) |
 | `MCP_AUTH_TOKEN` | No | Auth token for the MCP server (recommended for remote deployments) |
+| `OAUTH_ISSUER_URL` | No | Set to the server's public URL to enable OAuth (e.g. `https://xxx.run.app`) |
 | `PORT` | No | Server port (default: 8080) |
 | `TRANSPORT` | No | `streamable-http` or `stdio` (default: `streamable-http`) |
 
 ## Usage
+
+### Claude Web / Mobile (OAuth)
+
+When deployed with `OAUTH_ISSUER_URL` set, the server supports OAuth 2.0 with Dynamic Client Registration (DCR):
+
+1. Go to [claude.ai](https://claude.ai) → **Settings** → **Connectors** → **Add custom connector**
+2. **Name**: `Printify MCP`
+3. **Remote MCP server URL**: `https://<YOUR_SERVICE_URL>/mcp`
+4. Click **Add**, then click **Connect** on the new connector
+
+The OAuth flow completes automatically (no consent screen for personal servers).
 
 ### Claude Desktop (stdio mode)
 
