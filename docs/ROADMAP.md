@@ -32,19 +32,26 @@
 - [x] Settings に `extra="ignore"` 追加（.env未定義フィールド対応）
 - [x] テスト39件 全パス、Docker ローカルビルド + ヘルスチェック確認
 
+### Phase 4: Cloud Run デプロイ (2026-03-01)
+- [x] Secret Manager にシークレット登録（PRINTIFY_API_KEY, MCP_AUTH_TOKEN）
+- [x] サービスアカウントに Secret Manager アクセス権付与
+- [x] Cloud Runサービスデプロイ（min 0 / max 1, CPU Boost, 512MB）
+- [x] DNS Rebinding Protection 無効化（Cloud Run環境対応）
+- [x] デプロイドキュメント作成 → `docs/DEPLOYMENT.md`
+- [x] ヘルスチェック + MCP接続テスト確認
+
+### Phase 5: クライアント接続 (2026-03-01)
+- [x] TypingMind から Streamable HTTP + Bearer Token で接続確認
+- [x] Claude Code `.mcp.json` 設定 + 接続確認
+- [x] Claude Desktop `claude_desktop_config.json` 設定 + 接続確認
+- [x] OAuth 2.0 サポート追加（`InMemoryOAuthProvider` — DCR + PKCE, 同意画面なし）
+- [x] 静的Bearer TokenとOAuthトークンのデュアル認証
+- [x] Claude Web (claude.ai) から OAuth で接続確認
+- [x] テスト51件 全パス（既存39 + OAuth 12）
+- [x] Notion 設定手順ページに全クライアントの接続手順を記載
+- [x] README に Cloud Run + Secret Manager + Claude Web 手順を追加
+
 ## 残タスク
-
-### Phase 4: Cloud Run デプロイ
-- [ ] GCPプロジェクト設定（Artifact Registry有効化）
-- [ ] DockerイメージをArtifact Registryにpush
-- [ ] Cloud Runサービスデプロイ（min 0 / max 1, Startup CPU Boost）
-- [ ] 環境変数設定（PRINTIFY_API_KEY, MCP_AUTH_TOKEN）
-- [ ] ヘルスチェック + MCP接続テスト
-
-### Phase 5: Claude統合テスト
-- [ ] Claude Desktop からstdioモードで接続・動作確認
-- [ ] Cloud Run経由で Streamable HTTP モードの接続・動作確認
-- [ ] 全16ツールの実API呼び出しテスト
 
 ### Phase 6: 運用改善（優先度低）
 - [ ] S1: エラーパスのテスト追加（422, 204, auth edge cases等）
@@ -52,3 +59,4 @@
 - [ ] S5: BaseHTTPMiddleware → 純粋ASGIミドルウェアへの移行（SSE対応強化）
 - [ ] CI/CD（GitHub Actions: テスト + lint + Docker build）
 - [ ] Printify Webhook対応（注文ステータス変更通知等）
+- [ ] OAuthトークンの永続化（Cloud Run再起動時のトークン失効対策）
