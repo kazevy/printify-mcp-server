@@ -43,6 +43,22 @@ class TestHandleErrors:
         assert result["status_code"] == 500
         assert result["details"] == {}
 
+    async def test_http_error_with_broken_json_body(self):
+        @handle_errors
+        async def failing_tool():
+            response = httpx.Response(
+                502,
+                text="{broken json",
+                headers={"content-type": "application/json"},
+                request=httpx.Request("GET", "https://api.printify.com/v1/shops.json"),
+            )
+            raise httpx.HTTPStatusError("502 Bad Gateway", response=response, request=response.request)
+
+        result = await failing_tool()
+        assert result["error"] is True
+        assert result["status_code"] == 502
+        assert result["details"] == {}
+
     async def test_value_error_returns_structured_response(self):
         @handle_errors
         async def failing_tool():

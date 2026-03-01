@@ -49,6 +49,41 @@ class TestPrintifyServiceRequest:
         assert route.call_count == 2
 
 
+class TestResponseHandling:
+    @respx.mock
+    async def test_204_returns_empty_dict(self, service: PrintifyService):
+        respx.delete(f"{API}/v1/shops/12345/products/prod_1.json").mock(
+            return_value=httpx.Response(204)
+        )
+        result = await service.delete_product("prod_1")
+        assert result == {}
+
+    @respx.mock
+    async def test_retry_exhaustion_raises_last_exception(self, service: PrintifyService, monkeypatch):
+        async def noop_sleep(_):
+            pass
+
+        monkeypatch.setattr("src.services.printify.asyncio.sleep", noop_sleep)
+
+        respx.get(f"{API}/v1/shops.json").mock(
+            return_value=httpx.Response(429, headers={"Retry-After": "0"})
+        )
+        try:
+            await service._get("/v1/shops.json")
+            assert False, "Should have raised after 3 retries"
+        except httpx.HTTPStatusError as e:
+            assert e.response.status_code == 429
+
+
+class TestUploadImageValidation:
+    async def test_raises_when_no_url_or_contents(self, service: PrintifyService):
+        try:
+            await service.upload_image(file_name="design.png")
+            assert False, "Should have raised ValueError"
+        except ValueError as e:
+            assert "url or contents" in str(e).lower()
+
+
 class TestProactiveRateLimit:
     @respx.mock
     async def test_sleeps_when_remaining_below_threshold(self, service: PrintifyService, monkeypatch):

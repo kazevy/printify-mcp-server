@@ -35,6 +35,24 @@ class TestBearerAuthMiddleware:
         resp = client.get("/")
         assert resp.status_code == 401
 
+    def test_rejects_non_bearer_auth_scheme(self):
+        app = _make_app("secret123")
+        client = TestClient(app)
+        resp = client.get("/", headers={"authorization": "Basic dXNlcjpwYXNz"})
+        assert resp.status_code == 401
+
+    def test_rejects_bearer_prefix_only(self):
+        app = _make_app("secret123")
+        client = TestClient(app)
+        resp = client.get("/", headers={"authorization": "Bearer "})
+        assert resp.status_code == 401
+
+    def test_error_response_body(self):
+        app = _make_app("secret123")
+        client = TestClient(app)
+        resp = client.get("/")
+        assert resp.json() == {"error": "Unauthorized"}
+
     def test_allows_health_check_without_token(self):
         app = _make_app("secret123")
         client = TestClient(app)
