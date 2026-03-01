@@ -3,6 +3,7 @@ import logging
 import os
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.server import TransportSecuritySettings
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
@@ -28,6 +29,9 @@ def _create_service_and_mcp():
         "Printify MCP Server",
         json_response=True,
         stateless_http=True,
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+        ),
     )
 
     shops.register(mcp, service)
