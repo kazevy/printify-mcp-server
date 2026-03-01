@@ -75,6 +75,53 @@ class TestResponseHandling:
             assert e.response.status_code == 429
 
 
+class TestShopIdOverride:
+    def test_shop_path_uses_override_when_provided(self, service: PrintifyService):
+        path = service._shop_path("products.json", shop_id="99999")
+        assert path == "/v1/shops/99999/products.json"
+
+    def test_shop_path_uses_instance_when_no_override(self, service: PrintifyService):
+        path = service._shop_path("products.json")
+        assert path == "/v1/shops/12345/products.json"
+
+    def test_shop_path_override_with_no_instance_shop_id(self):
+        svc = PrintifyService(api_key="test-key")
+        path = svc._shop_path("products.json", shop_id="99999")
+        assert path == "/v1/shops/99999/products.json"
+
+    def test_shop_path_raises_when_no_shop_id_at_all(self):
+        svc = PrintifyService(api_key="test-key")
+        try:
+            svc._shop_path("products.json")
+            assert False, "Should have raised ValueError"
+        except ValueError:
+            pass
+
+    @respx.mock
+    async def test_list_products_with_shop_id_override(self, service: PrintifyService):
+        respx.get(f"{API}/v1/shops/99999/products.json").mock(
+            return_value=httpx.Response(200, json={"data": []})
+        )
+        result = await service.list_products(shop_id="99999")
+        assert result == {"data": []}
+
+    @respx.mock
+    async def test_list_orders_with_shop_id_override(self, service: PrintifyService):
+        respx.get(f"{API}/v1/shops/99999/orders.json").mock(
+            return_value=httpx.Response(200, json={"data": []})
+        )
+        result = await service.list_orders(shop_id="99999")
+        assert result == {"data": []}
+
+    @respx.mock
+    async def test_delete_product_with_shop_id_override(self, service: PrintifyService):
+        respx.delete(f"{API}/v1/shops/99999/products/prod_1.json").mock(
+            return_value=httpx.Response(204)
+        )
+        result = await service.delete_product("prod_1", shop_id="99999")
+        assert result == {}
+
+
 class TestUploadImageValidation:
     async def test_raises_when_no_url_or_contents(self, service: PrintifyService):
         try:

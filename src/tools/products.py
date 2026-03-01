@@ -7,36 +7,42 @@ from src.tools._error_handler import handle_errors
 def register(mcp: FastMCP, service: PrintifyService):
     @mcp.tool()
     @handle_errors
-    async def list_products(page: int = 1, limit: int = 10) -> dict:
-        """List products in the current shop. Supports pagination."""
-        return await service.list_products(page=page, limit=limit)
+    async def list_products(
+        page: int = 1, limit: int = 10, shop_id: str | None = None
+    ) -> dict:
+        """List products in a shop. Supports pagination. If shop_id is omitted, uses the default shop."""
+        return await service.list_products(page=page, limit=limit, shop_id=shop_id)
 
     @mcp.tool()
     @handle_errors
-    async def get_product(product_id: str) -> dict:
+    async def get_product(product_id: str, shop_id: str | None = None) -> dict:
         """Get detailed product info including mockup image URLs."""
-        return await service.get_product(product_id)
+        return await service.get_product(product_id, shop_id=shop_id)
 
     @mcp.tool()
     @handle_errors
-    async def create_product(data: dict) -> dict:
+    async def create_product(data: dict, shop_id: str | None = None) -> dict:
         """Create a new product. Requires title, blueprint_id, print_provider_id, variants, and print_areas."""
-        return await service.create_product(data)
+        return await service.create_product(data, shop_id=shop_id)
 
     @mcp.tool()
     @handle_errors
-    async def update_product(product_id: str, data: dict) -> dict:
+    async def update_product(
+        product_id: str, data: dict, shop_id: str | None = None
+    ) -> dict:
         """Update an existing product's properties."""
-        return await service.update_product(product_id, data)
+        return await service.update_product(product_id, data, shop_id=shop_id)
 
     @mcp.tool()
     @handle_errors
-    async def delete_product(product_id: str) -> dict:
+    async def delete_product(product_id: str, shop_id: str | None = None) -> dict:
         """Delete a product from the shop."""
-        return await service.delete_product(product_id)
+        return await service.delete_product(product_id, shop_id=shop_id)
 
     @mcp.tool()
     @handle_errors
-    async def publish_product(product_id: str, data: dict) -> dict:
+    async def publish_product(
+        product_id: str, data: dict, shop_id: str | None = None
+    ) -> dict:
         """Publish a product to sales channels. Data should specify which fields to publish (title, description, images, variants, tags)."""
-        return await service.publish_product(product_id, data)
+        return await service.publish_product(product_id, data, shop_id=shop_id)

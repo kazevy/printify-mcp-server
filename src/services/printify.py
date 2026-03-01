@@ -65,10 +65,11 @@ class PrintifyService:
     async def _delete(self, path: str) -> dict:
         return await self._request("DELETE", path)
 
-    def _shop_path(self, suffix: str) -> str:
-        if not self.shop_id:
+    def _shop_path(self, suffix: str, shop_id: str | None = None) -> str:
+        sid = shop_id or self.shop_id
+        if not sid:
             raise ValueError("shop_id is required. Set PRINTIFY_SHOP_ID or call list_shops first.")
-        return f"/v1/shops/{self.shop_id}/{suffix}"
+        return f"/v1/shops/{sid}/{suffix}"
 
     # --- Shops ---
 
@@ -81,26 +82,41 @@ class PrintifyService:
 
     # --- Products ---
 
-    async def list_products(self, page: int = 1, limit: int = 10) -> dict:
+    async def list_products(
+        self, page: int = 1, limit: int = 10, shop_id: str | None = None
+    ) -> dict:
         return await self._get(
-            self._shop_path("products.json"), page=page, limit=limit
+            self._shop_path("products.json", shop_id=shop_id), page=page, limit=limit
         )
 
-    async def get_product(self, product_id: str) -> dict:
-        return await self._get(self._shop_path(f"products/{product_id}.json"))
+    async def get_product(self, product_id: str, shop_id: str | None = None) -> dict:
+        return await self._get(
+            self._shop_path(f"products/{product_id}.json", shop_id=shop_id)
+        )
 
-    async def create_product(self, data: dict) -> dict:
-        return await self._post(self._shop_path("products.json"), data=data)
-
-    async def update_product(self, product_id: str, data: dict) -> dict:
-        return await self._put(self._shop_path(f"products/{product_id}.json"), data=data)
-
-    async def delete_product(self, product_id: str) -> dict:
-        return await self._delete(self._shop_path(f"products/{product_id}.json"))
-
-    async def publish_product(self, product_id: str, data: dict) -> dict:
+    async def create_product(self, data: dict, shop_id: str | None = None) -> dict:
         return await self._post(
-            self._shop_path(f"products/{product_id}/publish.json"), data=data
+            self._shop_path("products.json", shop_id=shop_id), data=data
+        )
+
+    async def update_product(
+        self, product_id: str, data: dict, shop_id: str | None = None
+    ) -> dict:
+        return await self._put(
+            self._shop_path(f"products/{product_id}.json", shop_id=shop_id), data=data
+        )
+
+    async def delete_product(self, product_id: str, shop_id: str | None = None) -> dict:
+        return await self._delete(
+            self._shop_path(f"products/{product_id}.json", shop_id=shop_id)
+        )
+
+    async def publish_product(
+        self, product_id: str, data: dict, shop_id: str | None = None
+    ) -> dict:
+        return await self._post(
+            self._shop_path(f"products/{product_id}/publish.json", shop_id=shop_id),
+            data=data,
         )
 
     # --- Catalog ---
@@ -137,15 +153,21 @@ class PrintifyService:
 
     # --- Orders ---
 
-    async def list_orders(self, page: int = 1, limit: int = 10) -> dict:
+    async def list_orders(
+        self, page: int = 1, limit: int = 10, shop_id: str | None = None
+    ) -> dict:
         return await self._get(
-            self._shop_path("orders.json"), page=page, limit=limit
+            self._shop_path("orders.json", shop_id=shop_id), page=page, limit=limit
         )
 
-    async def get_order(self, order_id: str) -> dict:
-        return await self._get(self._shop_path(f"orders/{order_id}.json"))
+    async def get_order(self, order_id: str, shop_id: str | None = None) -> dict:
+        return await self._get(
+            self._shop_path(f"orders/{order_id}.json", shop_id=shop_id)
+        )
 
-    async def submit_order(self, order_id: str) -> dict:
+    async def submit_order(self, order_id: str, shop_id: str | None = None) -> dict:
         return await self._post(
-            self._shop_path(f"orders/{order_id}/send_to_production.json")
+            self._shop_path(
+                f"orders/{order_id}/send_to_production.json", shop_id=shop_id
+            )
         )
