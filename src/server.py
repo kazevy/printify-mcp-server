@@ -8,7 +8,6 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
-from src.auth import BearerAuthMiddleware
 from src.services.printify import PrintifyService
 from src.tools import shops, products, catalog, images, orders
 
@@ -25,14 +24,37 @@ def _create_service_and_mcp():
         shop_id=settings.printify_shop_id,
     )
 
-    mcp = FastMCP(
-        "Printify MCP Server",
-        json_response=True,
-        stateless_http=True,
-        transport_security=TransportSecuritySettings(
+    # OAuth / Bearer Token 認証の設定
+    mcp_kwargs = {
+        "json_response": True,
+        "stateless_http": True,
+        "transport_security": TransportSecuritySettings(
             enable_dns_rebinding_protection=False,
         ),
-    )
+    }
+
+    if settings.oauth_issuer_url:
+        # OAuth モード: Claude Web/Mobile + 静的Bearer Token（Claude Code/TypingMind）
+        from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
+
+        from src.oauth_provider import InMemoryOAuthProvider
+
+        oauth_provider = InMemoryOAuthProvider(
+            static_bearer_token=settings.mcp_auth_token,
+        )
+        mcp_kwargs["auth_server_provider"] = oauth_provider
+        mcp_kwargs["auth"] = AuthSettings(
+            issuer_url=settings.oauth_issuer_url,
+            resource_server_url=f"{settings.oauth_issuer_url}/mcp",
+            client_registration_options=ClientRegistrationOptions(
+                enabled=True,  # DCR有効化（Claude Webが自動登録）
+            ),
+        )
+        logger.info(f"OAuth enabled (issuer: {settings.oauth_issuer_url})")
+    else:
+        logger.info("OAuth disabled (no OAUTH_ISSUER_URL set)")
+
+    mcp = FastMCP("Printify MCP Server", **mcp_kwargs)
 
     shops.register(mcp, service)
     products.register(mcp, service)
@@ -68,8 +90,13 @@ def create_app() -> Starlette:
         ],
         lifespan=lifespan,
     )
-    if settings.mcp_auth_token:
+
+    # OAuth無効時のみ旧ミドルウェアでBearer Token認証
+    if not settings.oauth_issuer_url and settings.mcp_auth_token:
+        from src.auth import BearerAuthMiddleware
+
         app.add_middleware(BearerAuthMiddleware, token=settings.mcp_auth_token)
+
     return app
 
 
