@@ -51,12 +51,15 @@
 - [x] Notion 設定手順ページに全クライアントの接続手順を記載
 - [x] README に Cloud Run + Secret Manager + Claude Web 手順を追加
 
+### Phase 6: 運用改善 (2026-03-01)
+- [x] S1: エラーパスのテスト追加（422, 204, auth edge cases等）→ テスト58件
+- [x] CI/CD（GitHub Actions: lint + test + Docker build）→ `.github/workflows/ci.yml`
+- [x] 全 shop 依存ツールに `shop_id` パラメータ追加（マルチユーザー対応）→ テスト65件
+
 ## 残タスク
 
-### Phase 6: 運用改善（優先度低）
-- [ ] S1: エラーパスのテスト追加（422, 204, auth edge cases等）
+### Phase 7: 運用改善（優先度低）
 - [ ] S2: `get_shop` をダイレクトAPI呼び出しに変更（可能であれば）
 - [ ] S5: BaseHTTPMiddleware → 純粋ASGIミドルウェアへの移行（SSE対応強化）
-- [ ] CI/CD（GitHub Actions: テスト + lint + Docker build）
 - [ ] Printify Webhook対応（注文ステータス変更通知等）
 - [ ] OAuthトークンの永続化（Cloud Run再起動時のトークン失効対策）
