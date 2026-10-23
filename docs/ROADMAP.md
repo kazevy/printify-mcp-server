@@ -44,7 +44,7 @@
 - [x] TypingMind から Streamable HTTP + Bearer Token で接続確認
 - [x] Claude Code `.mcp.json` 設定 + 接続確認
 - [x] Claude Desktop `claude_desktop_config.json` 設定 + 接続確認
-- [x] OAuth 2.0 サポート追加（`InMemoryOAuthProvider` — DCR + PKCE, 同意画面なし）
+- [x] OAuth 2.0 サポート追加（`InMemoryOAuthProvider` — DCR + PKCE。同意画面なしだったが 2026-10-23 に同意画面を追加）
 - [x] 静的Bearer TokenとOAuthトークンのデュアル認証
 - [x] Claude Web (claude.ai) から OAuth で接続確認
 - [x] テスト51件 全パス（既存39 + OAuth 12）
@@ -63,3 +63,10 @@
 - [ ] S5: BaseHTTPMiddleware → 純粋ASGIミドルウェアへの移行（SSE対応強化）
 - [ ] Printify Webhook対応（注文ステータス変更通知等）
 - [ ] OAuthトークンの永続化（Cloud Run再起動時のトークン失効対策）
+
+### セキュリティ修正 (2026-10-23)
+- [x] OAuth 認可にオーナー確認の同意画面を追加（合言葉 + CSRF トークン、使い捨て・5分失効、失敗回数制限）
+- [x] DCR の redirect_uri を許可リスト（claude.ai / claude.com / ループバック + 環境変数）に限定
+- [x] HTTP モードで認証設定が無い場合は起動を拒否（fail-closed）
+- [x] 静的 Bearer 比較を bytes の定数時間比較に統一（非 ASCII ヘッダーで 500 にならない）
+- [x] 依存更新（mcp 1.30.0, starlette 1.9.0, pyjwt 2.15.1, python-multipart 0.0.32 ほか）。pip-audit 既知脆弱性 0

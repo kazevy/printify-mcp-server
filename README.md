@@ -40,8 +40,10 @@ uv sync
 |----------|----------|-------------|
 | `PRINTIFY_API_KEY` | Yes | Printify API key |
 | `PRINTIFY_SHOP_ID` | No | Default shop ID (use `list_shops` to discover) |
-| `MCP_AUTH_TOKEN` | No | Auth token for the MCP server (recommended for remote deployments) |
+| `MCP_AUTH_TOKEN` | HTTP: Yes* | Static bearer token for the MCP server (min. 16 chars). The HTTP server refuses to start unless `MCP_AUTH_TOKEN` or `OAUTH_ISSUER_URL` (with an owner secret) is set |
 | `OAUTH_ISSUER_URL` | No | Set to the server's public URL to enable OAuth (e.g. `https://xxx.run.app`) |
+| `OAUTH_OWNER_PASSWORD` | No | Secret the owner types on the OAuth consent page (min. 16 chars). Defaults to `MCP_AUTH_TOKEN` |
+| `OAUTH_ALLOWED_REDIRECT_URIS` | No | Extra redirect URIs allowed for Dynamic Client Registration (comma-separated, exact match). claude.ai / claude.com callbacks and loopback (`http://localhost`, `http://127.0.0.1`) are always allowed |
 | `PORT` | No | Server port (default: 8080) |
 | `TRANSPORT` | No | `streamable-http` or `stdio` (default: `streamable-http`) |
 
@@ -56,7 +58,7 @@ When deployed with `OAUTH_ISSUER_URL` set, the server supports OAuth 2.0 with Dy
 3. **Remote MCP server URL**: `https://<YOUR_SERVICE_URL>/mcp`
 4. Click **Add**, then click **Connect** on the new connector
 
-The OAuth flow completes automatically (no consent screen for personal servers).
+Your browser opens the server's consent page. It shows the requesting app and its redirect URI; enter the owner secret (`OAUTH_OWNER_PASSWORD`, or `MCP_AUTH_TOKEN` if unset) and click **Approve**. No authorization code is issued without the owner secret. Only redirect URIs on the allowlist can be registered.
 
 ### Claude Desktop (stdio mode)
 

@@ -58,3 +58,10 @@ class TestBearerAuthMiddleware:
         client = TestClient(app)
         resp = client.get("/health")
         assert resp.status_code == 404  # route doesn't exist, but NOT 401
+
+    def test_rejects_non_ascii_header_without_server_error(self):
+        # 非 ASCII を含むヘッダーで比較関数が例外を出し 500 にならないこと
+        app = _make_app("secret123")
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/", headers={"authorization": "Bearer s\u00e9cret".encode("latin-1")})
+        assert resp.status_code == 401

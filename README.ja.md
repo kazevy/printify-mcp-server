@@ -40,7 +40,10 @@ uv sync
 |------|------|------|
 | `PRINTIFY_API_KEY` | Yes | Printify API キー |
 | `PRINTIFY_SHOP_ID` | No | デフォルトのショップID（省略時は `list_shops` で取得） |
-| `MCP_AUTH_TOKEN` | No | MCP サーバーの認証トークン（リモートデプロイ時に設定推奨） |
+| `MCP_AUTH_TOKEN` | HTTP 時は実質必須 | MCP サーバーの静的 Bearer Token（16 文字以上）。HTTP サーバーは `MCP_AUTH_TOKEN` か `OAUTH_ISSUER_URL`（＋合言葉）が無いと起動しない |
+| `OAUTH_ISSUER_URL` | No | 公開 URL を設定すると OAuth を有効化（例: `https://xxx.run.app`） |
+| `OAUTH_OWNER_PASSWORD` | No | OAuth 同意画面でオーナーが入力する合言葉（16 文字以上）。未設定なら `MCP_AUTH_TOKEN` を使う |
+| `OAUTH_ALLOWED_REDIRECT_URIS` | No | DCR で追加許可する redirect_uri（カンマ区切り・完全一致）。claude.ai / claude.com とループバックは既定で許可 |
 | `PORT` | No | サーバーポート（デフォルト: 8080） |
 | `TRANSPORT` | No | `streamable-http` or `stdio`（デフォルト: `streamable-http`） |
 

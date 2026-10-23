@@ -24,7 +24,10 @@ MCPセッション中はツール呼び出しが数分間隔でもウォーム�
 |--------|:---:|------|
 | `PRINTIFY_API_KEY` | Yes | Printify APIトークン |
 | `PRINTIFY_SHOP_ID` | No | デフォルトショップID |
-| `MCP_AUTH_TOKEN` | Yes | MCP接続用Bearer Token（リモート公開時） |
+| `MCP_AUTH_TOKEN` | Yes | MCP接続用Bearer Token（16文字以上）。HTTP モードでは `MCP_AUTH_TOKEN` も `OAUTH_ISSUER_URL` も無いと起動を拒否する |
+| `OAUTH_ISSUER_URL` | No | 公開URL（例: `https://xxx.run.app`）。設定すると OAuth（DCR + 同意画面）を有効化 |
+| `OAUTH_OWNER_PASSWORD` | No | OAuth 同意画面の合言葉（16文字以上）。未設定なら `MCP_AUTH_TOKEN` を合言葉として使う |
+| `OAUTH_ALLOWED_REDIRECT_URIS` | No | DCR で追加許可する redirect_uri（カンマ区切り・完全一致）。claude.ai / claude.com のコールバックとループバックは既定で許可 |
 | `PORT` | No | リッスンポート（デフォルト: 8080） |
 | `TRANSPORT` | No | トランスポート（デフォルト: streamable-http） |
 
@@ -111,3 +114,10 @@ uv run python -m src.server
 
 URL: `https://<SERVICE_URL>/mcp`
 認証: Bearer Token（`MCP_AUTH_TOKEN` に設定した値）
+
+### OAuth クライアント（Claude.ai カスタムコネクタ / Claude Code / Codex の OAuth 接続）
+
+`OAUTH_ISSUER_URL` を設定している場合、接続時にブラウザでサーバーの同意画面が開く。
+要求元アプリ名（自己申告）と redirect_uri を確認し、合言葉（`OAUTH_OWNER_PASSWORD`、未設定なら `MCP_AUTH_TOKEN`）を入力して Approve する。
+合言葉なしでは認可コードは発行されない。同意画面の要求は 5 分で失効し、1 要求あたり 5 回、全体で 15 分に 20 回失敗するとロックする（ロック中も静的 Bearer Token は使える）。
+クライアント・トークンはインメモリのため、再デプロイ・インスタンス再起動のたびに再認可が必要。
