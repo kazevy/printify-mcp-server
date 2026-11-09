@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Printify MCP server for Claude Desktop / Claude Web"
 requires-python = ">=3.12"
 dependencies = [
-    "mcp[cli]>=1.9.0",
+    "mcp[cli]>=1.30.0,<2",
     "httpx>=0.28.0",
     "pydantic-settings>=2.7.0",
     "uvicorn>=0.34.0",
