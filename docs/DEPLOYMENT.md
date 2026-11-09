@@ -46,7 +46,7 @@ gcloud run deploy printify-mcp-server \
   --min-instances 0 \
   --max-instances 1 \
   --cpu-boost \
-  --no-cpu-throttling \
+  --cpu-throttling \
   --set-env-vars "TRANSPORT=streamable-http" \
   --set-secrets "PRINTIFY_API_KEY=printify-api-key:latest,MCP_AUTH_TOKEN=printify-mcp-auth-token:latest" \
   --allow-unauthenticated
