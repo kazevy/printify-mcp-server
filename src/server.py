@@ -5,7 +5,7 @@ import os
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.server import TransportSecuritySettings
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
 from src.services.printify import PrintifyService
@@ -98,6 +98,17 @@ async def health(request):
     return JSONResponse({"status": "ok"})
 
 
+async def reject_mcp_get(request):
+    """GET /mcp（サーバーからの通知を待つ接続）を 405 で断る。
+
+    Claude Code は GET /mcp を張りっぱなしにするため、Cloud Run のインスタンスが 1 日中
+    起き続けて課金されていた（2026-11-08 に 1 日 24 時間）。このサーバーのツールは
+    クライアントへ通知しないので、この接続は要らない。MCP の仕様上、GET に 405 を返すと
+    クライアントは待ち受け接続を張らない。POST /mcp は下の Mount がそのまま受ける。
+    """
+    return Response(status_code=405, headers={"Allow": "POST"})
+
+
 def create_app() -> Starlette:
     from src.config import MIN_SECRET_LENGTH, Settings
 
@@ -127,6 +138,7 @@ def create_app() -> Starlette:
     app = Starlette(
         routes=[
             Route("/health", health),
+            Route("/mcp", reject_mcp_get, methods=["GET"]),
             Mount("/", app=mcp.streamable_http_app()),
         ],
         lifespan=lifespan,
