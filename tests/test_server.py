@@ -55,7 +55,12 @@ class TestMcpGetRejected:
         monkeypatch.setenv("OAUTH_ISSUER_URL", "https://printify-mcp.example.com")
         with TestClient(create_app()) as client:
             resp = client.get("/mcp", headers={"Accept": "text/event-stream"})
+            # OAuth の開始は認証なしの POST /mcp の 401 から始まる。こちらは変えない
+            post = client.post("/mcp", json=INIT_BODY, headers=MCP_HEADERS)
         assert resp.status_code == 405
+        assert resp.headers["allow"] == "POST"
+        assert post.status_code == 401
+        assert "resource_metadata" in post.headers["www-authenticate"]
 
     def test_post_mcp_still_works(self, monkeypatch):
         monkeypatch.setenv("MCP_AUTH_TOKEN", "test-bearer-token")
